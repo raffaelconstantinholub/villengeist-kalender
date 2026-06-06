@@ -11,7 +11,7 @@
     <link href="https://googleapis.com/css2?family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
 
     <!-- Supabase-Bibliothek -->
-    <script src="https://jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         .calendar-wrapper { margin-top: 30px; font-family: 'Montserrat', sans-serif; }
@@ -37,7 +37,7 @@
 </head>
 <body>
 
-    <div class="login-container" style="max-width: 600px;">
+    <div class="login-container" style="max-width: 600px; margin: 0 auto; padding: 20px;">
         <div class="image-wrapper">
             <img src="bilder/hauptseite-foto.jpeg" alt="Villengeist Hauptseite" class="login-image">
         </div>
@@ -85,7 +85,8 @@
     </div>
 
     <script>
-        const SUPABASE_URL = "https://supabase.co";
+        // WICHTIG: Ersetzen Sie diese URL mit Ihrer ECHTEN Supabase-Projekt-URL!
+        const SUPABASE_URL = "https://iduutrbcapqmahaczaat.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_Y_Iz-ukUr-3JFCwO9U9CZQ_EvcwWbUO";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -96,11 +97,25 @@
         const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
         const weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
+        // Event Listener für die Monats-Buttons hinzufügen
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+
         async function ladeCloudDaten() {
-            const { data, error } = await supabase.from('posts').select('*');
-            if (!error) {
-                gebuchteTermine = data || [];
-                renderCalendar();
+            try {
+                const { data, error } = await supabase.from('posts').select('*');
+                if (!error) {
+                    gebuchteTermine = data || [];
+                    renderCalendar();
+                }
+            } catch (err) {
+                console.error("Fehler beim Laden der Supabase-Daten:", err);
             }
         }
 
@@ -138,7 +153,7 @@
                 dayCell.textContent = day;
 
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const treffer = gebuchteTermine.filter(t => t.start_date.substring(0, 10) === dateStr);
+                const treffer = gebuchteTermine.filter(t => t.start_date && t.start_date.substring(0, 10) === dateStr);
                 
                 if (treffer.length > 0) { dayCell.classList.add('booked-day'); }
                 if (dateStr === gewaehltesDatumStr) { dayCell.classList.add('selected-day'); }
@@ -152,10 +167,10 @@
                     document.getElementById('directBookingForm').style.display = 'flex';
                     
                     if (treffer.length > 0) {
-                        const belegungen = treffer.map(t => `${t.room} (${t.user_name || 'Unbekannt'})`).join(', ');
+                        const belegungen = treffer.map(t => `${t.room || 'Raum'} (${t.user_name || 'Unbekannt'})`).join(', ');
                         document.getElementById('dayInfoText').textContent = `Bereits belegt: ${belegungen}`;
                     } else {
-                        document.getElementById('dayInfoText').textContent = "Dieser Tag ist noch komplett frei.";
+                        document.getElementById('dayInfoText').textContent = "Für diesen Tag liegen keine Buchungen vor.";
                     }
                 });
 
@@ -163,32 +178,23 @@
             }
         }
 
-        document.getElementById('directBookingForm').addEventListener('submit', async (e) => {
+        // Buchung abschicken
+        document.getElementById('directBookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const user = document.getElementById('userSelect').value;
             const room = document.getElementById('roomSelect').value;
 
-            const { error } = await supabase
-                .from('posts')
-                .insert([{ room: room, start_date: gewaehltesDatumStr, end_date: gewaehltesDatumStr, user_name: user }]);
+            if (!gewaehltesDatumStr) return;
+
+            const { data, error } = await supabase.from('posts').insert([
+                { start_date: gewaehltesDatumStr, user_name: user, room: room }
+            ]);
 
             if (!error) {
-                document.getElementById('directBookingForm').reset();
-                document.getElementById('directBookingForm').style.display = 'none';
-                document.getElementById('selectionTitle').textContent = 'Erfolgreich gebucht!';
-                document.getElementById('dayInfoText').textContent = '';
-                gewaehltesDatumStr = "";
-                ladeCloudDaten();
+                alert("Erfolgreich reserviert!");
+                ladeCloudDaten(); // Kalender neu laden
             } else {
-                alert('Fehler beim Speichern.');
+                alert("Fehler bei der Reservierung: " + error.message);
             }
         });
-
-        document.getElementById('prevMonth').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
-        document.getElementById('nextMonth').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
-
-        ladeCloudDaten();
-    </script>
-</body>
-</html>
 
