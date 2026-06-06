@@ -75,7 +75,7 @@
                 <select id="roomSelect" required>
                     <option value="" disabled selected>Welcher Raum?</option>
                     <option value="Raum 1">Raum 1</option>
-                    <option value="Room 2">Raum 2</option>
+                    <option value="Raum 2">Raum 2</option>
                 </select>
 
                 <button type="submit">Reservieren</button>
@@ -85,10 +85,9 @@
     </div>
 
     <script>
-        const SUPABASE_URL = "https://supabase.co";
+        const SUPABASE_URL = "https://iduutrbcapqmahaczaat.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkdXV0cmJjYXBxbWFoYWN6YWF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NzkwODUsImV4cCI6MjA5NjI1NTA4NX0.ri1Kd4nSj4UuSpO6ofxMXJdTSdrDtujowAvobsYhyuY";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 
         let currentDate = new Date();
         let gebuchteTermine = [];
@@ -97,7 +96,6 @@
         const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
         const weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
-        // Event Listener für die Monats-Buttons
         document.getElementById('prevMonth').addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() - 1);
             renderCalendar();
@@ -197,9 +195,3 @@
                 alert("Erfolgreich reserviert!");
                 ladeCloudDaten(); 
             } else {
-                alert("Fehler bei der Reservierung: " + error.message);
-            }
-        });
-
-        ladeCloudDaten();
-    </script>
