@@ -8,10 +8,10 @@
     
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+    <link href="https://googleapis.com" rel="stylesheet">
 
     <!-- Supabase-Bibliothek -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://jsdelivr.net"></script>
 
     <style>
         .calendar-wrapper { margin-top: 30px; font-family: 'Montserrat', sans-serif; }
@@ -75,7 +75,7 @@
                 <select id="roomSelect" required>
                     <option value="" disabled selected>Welcher Raum?</option>
                     <option value="Raum 1">Raum 1</option>
-                    <option value="Raum 2">Raum 2</option>
+                    <option value="Room 2">Raum 2</option>
                 </select>
 
                 <button type="submit">Reservieren</button>
@@ -85,9 +85,8 @@
     </div>
 
     <script>
-        // WICHTIG: Ersetzen Sie diese URL mit Ihrer ECHTEN Supabase-Projekt-URL!
-        const SUPABASE_URL = "https://iduutrbcapqmahaczaat.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkdXV0cmJjYXBxbWFoYWN6YWF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NzkwODUsImV4cCI6MjA5NjI1NTA4NX0.ri1Kd4nSj4UuSpO6ofxMXJdTSdrDtujowAvobsYhyuY";
+        const SUPABASE_URL = "https://supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_Y_Iz-ukUr-3JFCwO9U9CZQ_EvcwWbUO";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentDate = new Date();
@@ -97,7 +96,7 @@
         const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
         const weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
-        // Event Listener für die Monats-Buttons hinzufügen
+        // Event Listener für die Monats-Buttons
         document.getElementById('prevMonth').addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() - 1);
             renderCalendar();
@@ -112,16 +111,20 @@
                 const { data, error } = await supabase.from('posts').select('*');
                 if (!error) {
                     gebuchteTermine = data || [];
-                    renderCalendar();
+                } else {
+                    console.error("Supabase Fehler:", error);
                 }
             } catch (err) {
-                console.error("Fehler beim Laden der Supabase-Daten:", err);
+                console.error("Verbindungsfehler:", err);
             }
+            renderCalendar();
         }
 
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
             const display = document.getElementById('monthYearDisplay');
+            if (!grid || !display) return;
+            
             grid.innerHTML = ''; 
             
             const year = currentDate.getFullYear();
@@ -136,7 +139,7 @@
             });
             
             const firstDayOfMonth = new Date(year, month, 1);
-            let startDay = firstDayOfMonth.getDay();
+            let startDay = firstDayOfMonth.getDay(); 
             startDay = startDay === 0 ? 6 : startDay - 1;
             
             const totalDays = new Date(year, month + 1, 0).getDate();
@@ -178,7 +181,6 @@
             }
         }
 
-        // Buchung abschicken
         document.getElementById('directBookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const user = document.getElementById('userSelect').value;
@@ -192,9 +194,11 @@
 
             if (!error) {
                 alert("Erfolgreich reserviert!");
-                ladeCloudDaten(); // Kalender neu laden
+                ladeCloudDaten(); 
             } else {
                 alert("Fehler bei der Reservierung: " + error.message);
             }
         });
 
+        ladeCloudDaten();
+    </script>
